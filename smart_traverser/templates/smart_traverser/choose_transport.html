@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Transport Mode</title>
+    <style>
+        body {
+            background: url("{% static 'images/AI.png' %}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 120px auto;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.75);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+        }
+
+        h2 {
+            color: #ffc107;
+            margin-bottom: 30px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            background-color: #ffc107;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #ffca2b;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Select Mode of Transport</h2>
+    <form method="post" action="{% url 'show_result' %}">
+        {% csrf_token %}
+        <input type="hidden" name="source" value="{{ source }}">
+        <input type="hidden" name="destination" value="{{ destination }}">
+
+        <button type="submit" name="mode" value="bus">Bus</button>
+        <button type="submit" name="mode" value="train">Train</button>
+        <button type="submit" name="mode" value="flight">Flight</button>
+    </form>
+</div>
+</body>
+</html>

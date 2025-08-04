@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Budget Options</title>
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px;
+            margin: 0;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        h2 {
+            color: #ffc107;
+            margin-top: 40px;
+        }
+        .section {
+            background: #1e1e1e;
+            padding: 25px;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 0 15px #ffc107;
+            width: 80%;
+            max-width: 800px;
+        }
+        button {
+            background-color: #ffc107;
+            color: #111;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            font-size: 15px;
+        }
+        .content {
+            display: none;
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .ticket-form {
+            margin-top: 20px;
+        }
+        .ticket-form input {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 80%;
+            border: none;
+            border-radius: 4px;
+        }
+        .download-btn {
+            background-color: #28a745;
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        function toggleSection(id) {
+            var section = document.getElementById(id);
+            section.style.display = (section.style.display === "block") ? "none" : "block";
+        }
+
+        function showBookingForm(mode) {
+            const form = document.getElementById('booking-form');
+            document.getElementById('travelMode').value = mode;
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</head>
+<body>
+    <h1>Smart Traverser - Budget Options</h1>
+    <p style="text-align: center;">From <strong>{{ source }}</strong> to <strong>{{ destination }}</strong> | Distance: <strong>{{ distance }} km</strong></p>
+
+    <!-- LOW -->
+    <h2>Low Budget</h2>
+    <div class="section">
+        <button onclick="toggleSection('low-travel')"><i class="fas fa-train icon"></i> Travelling</button>
+        <div id="low-travel" class="content">
+            <p>Transport: Train</p>
+            <p>Cost: ₹{{ train_cost }}</p>
+        </div>
+
+        <button onclick="toggleSection('low-food')"><i class="fas fa-utensils icon"></i> Food</button>
+        <div id="low-food" class="content">
+            <ul>
+                <li>Veg Meal - ₹100</li>
+                <li>Snacks - ₹50</li>
+                <li>Tea - ₹20</li>
+            </ul>
+        </div>
+
+        <button onclick="showBookingForm('Train')">Book Ticket</button>
+    </div>
+
+    <!-- MEDIUM -->
+    <h2>Medium Budget</h2>
+    <div class="section">
+        <button onclick="toggleSection('medium-travel')"><i class="fas fa-bus icon"></i> Travelling</button>
+        <div id="medium-travel" class="content">
+            <p>Transport: Bus</p>
+            <p>Cost: ₹{{ bus_cost }}</p>
+        </div>
+
+        <button onclick="toggleSection('medium-food')"><i class="fas fa-hamburger icon"></i> Food</button>
+        <div id="medium-food" class="content">
+            <ul>
+                <li>Veg/Non-Veg Meal - ₹150</li>
+                <li>Juice - ₹60</li>
+                <li>Chips - ₹40</li>
+            </ul>
+        </div>
+
+        <button onclick="showBookingForm('Bus')">Book Ticket</button>
+    </div>
+
+    <!-- HIGH -->
+    <h2>High Budget</h2>
+    <div class="section">
+        <button onclick="toggleSection('high-travel')"><i class="fas fa-plane icon"></i> Travelling</button>
+        <div id="high-travel" class="content">
+            <p>Transport: Flight</p>
+            <p>Cost: ₹{{ flight_cost }}</p>
+        </div>
+
+        <button onclick="toggleSection('high-food')"><i class="fas fa-pizza-slice icon"></i> Food</button>
+        <div id="high-food" class="content">
+            <ul>
+                <li>Premium Meal - ₹300</li>
+                <li>Drinks - ₹120</li>
+                <li>Dessert - ₹100</li>
+            </ul>
+        </div>
+
+        <button onclick="showBookingForm('Flight')">Book Ticket</button>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="section" id="booking-form">
+        <h2>Book Your Ticket</h2>
+        <form method="POST" action="{% url 'book_ticket' %}">
+            {% csrf_token %}
+            <input type="hidden" name="source" value="{{ source }}">
+            <input type="hidden" name="destination" value="{{ destination }}">
+            <input type="hidden" name="mode" id="travelMode">
+            <input type="text" name="name" placeholder="Your Name" required><br>
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </div>
+
+    <!-- Download button shown after ticket is booked -->
+    {% if ticket %}
+    <div class="section">
+        <h2>Ticket Booked!</h2>
+        <p>Thank you {{ ticket.name }}. Your ticket for {{ ticket.mode }} from {{ ticket.source }} to {{ ticket.destination }} on {{ ticket.travel_date }} is ready.</p>
+        <a href="{% url 'download_ticket' %}">
+            <button class="download-btn">Download Ticket</button>
+        </a>
+    </div>
+    {% endif %}
+
+</body>
+</html>
+
+</body>
+</html>

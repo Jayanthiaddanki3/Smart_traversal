@@ -1,0 +1,168 @@
+{% load static %}
+
+<style>
+#ai-box {
+  position: fixed;
+  right: 20px;
+  top: 40%;
+  transform: translateY(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+#ai-box img {
+  width: 300px;
+  height: 300px;
+  border-radius: 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.ai-button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  width: 140px;
+}
+
+.start-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.stop-btn {
+  background-color: #dc3545;
+  color: white;
+}
+</style>
+
+<div id="ai-box">
+  <img src="{% static 'images/BACKGROUND.png' %}" alt="AI Assistant" />
+  <button id="askBtn" class="ai-button start-btn" onclick="startAssistant()">🎙️ Ask</button>
+  <button id="stopBtn" class="ai-button stop-btn" onclick="stopAssistant()">🛑 Stop</button>
+</div>
+
+<script>
+let recognition;
+let synth = window.speechSynthesis;
+let bookingStep = null;
+
+function speak(text, callback) {
+  if (synth.speaking) synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.onend = () => {
+    if (callback) callback();
+  };
+  synth.speak(utter);
+}
+
+function readFullDetails() {
+  const source = "{{ source|title }}";
+  const destination = "{{ destination|title }}";
+  const distance = "{{ distance }}";
+  const trainCost = "{{ train_cost }}";
+  const busCost = "{{ bus_cost }}";
+  const flightCost = "{{ flight_cost }}";
+  const hasFlight = parseFloat(flightCost) > 0;
+
+  const lowMeal = `{% for item, cost in low_meal.items %}{{ item }} ₹{{ cost }}, {% endfor %}`;
+  const medMeal = `{% for item, cost in med_meal.items %}{{ item }} ₹{{ cost }}, {% endfor %}`;
+  const highMeal = `{% for item, cost in high_meal.items %}{{ item }} ₹{{ cost }}, {% endfor %}`;
+
+  let message = `
+    You are travelling from ${source} to ${destination}, covering a distance of ${distance} kilometers.
+    Train cost is ₹${trainCost}. Food items in low budget category: ${lowMeal}
+    Bus cost is ₹${busCost}. Food items in medium budget category: ${medMeal}
+  `;
+
+  if (hasFlight) {
+    message += `Flight cost is ₹${flightCost}. Food items in high budget category: ${highMeal}.`;
+  } else {
+    message += `No flight available for this route and no high budget food options.`;
+  }
+
+  message += ` Would you like to book a ticket?`;
+
+  speak(message.trim(), () => {
+    bookingStep = "ask_book";
+    document.getElementById("askBtn").style.display = "inline-block";
+    document.getElementById("stopBtn").style.display = "inline-block";
+  });
+}
+
+window.onload = function () {
+  readFullDetails();
+};
+
+function startAssistant() {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert("Voice recognition not supported.");
+    return;
+  }
+
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onresult = function (event) {
+    const input = event.results[0][0].transcript.toLowerCase();
+    console.log("User said:", input);
+
+    if (bookingStep === "ask_book" && (input.includes("yes") || input.includes("book"))) {
+      speak("Please enter your name to book the ticket.");
+      bookingStep = "await_name";
+      return;
+    }
+
+    if (bookingStep === "await_name" && (input.includes("confirm") || input.includes("ticket"))) {
+      speak("Ticket confirmed. Say 'download ticket' to get your ticket.");
+      bookingStep = "await_download";
+      return;
+    }
+
+    if (bookingStep === "await_download" && input.includes("download")) {
+      speak("Ticket downloaded. Thank you for travelling with us! Happy journey.");
+      bookingStep = "final_qa";
+      return;
+    }
+
+    if (bookingStep === "final_qa" && (input.includes("no") || input.includes("exit"))) {
+      speak("Goodbye! Thank you for using Smart Traverser.");
+      return;
+    }
+
+    // Gemini fallback
+    fetch("/chat/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "message=" + encodeURIComponent(input)
+    })
+    .then(res => res.json())
+    .then(data => speak(data.response))
+    .catch(err => {
+      console.error(err);
+      speak("Sorry, I couldn't process your request.");
+    });
+  };
+
+  recognition.onerror = function (event) {
+    console.error("Speech recognition error:", event.error);
+    speak("Sorry, something went wrong.");
+  };
+
+  recognition.start();
+}
+
+function stopAssistant() {
+  if (recognition) recognition.stop();
+  synth.cancel();
+  speak("Voice assistant stopped.");
+}
+</script>

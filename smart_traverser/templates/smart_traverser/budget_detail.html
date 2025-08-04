@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Budget Breakdown</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        h2, h3, h4 {
+            color: #ffc107;
+        }
+        .section {
+            background: #222;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px #ffc107aa;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        ul li {
+            margin-bottom: 6px;
+        }
+        button {
+            background-color: #ffc107;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #111;
+            margin: 5px 0;
+        }
+        .icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .sub-section {
+            display: none;
+            margin-top: 15px;
+        }
+        #final-confirm {
+            display: none;
+            margin-top: 30px;
+        }
+    </style>
+    <script>
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+        function prepareFinal(mode, cost) {
+            document.getElementById('final-mode').value = mode;
+            document.getElementById('final-cost').value = cost;
+            document.getElementById('final-confirm').style.display = 'block';
+            document.getElementById('final-confirm').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</head>
+<body>
+
+    <h2>
+        <span class="icon">📍</span>
+        From <strong>{{ source }}</strong> to <strong>{{ destination }}</strong> |
+        Distance: <strong>{{ distance }} km</strong>
+    </h2>
+
+    <!-- LOW BUDGET -->
+    <h2><span class="icon">💸</span>Low Budget Travel</h2>
+    <div class="section">
+        <button onclick="toggleSection('low-transport')">Travelling</button>
+        <div id="low-transport" class="sub-section">
+            <h3><span class="icon">🚆</span>Transport: Train</h3>
+            <p>Cost: ₹{{ train_cost }}</p>
+        </div>
+
+        <button onclick="toggleSection('low-food')">Food</button>
+        <div id="low-food" class="sub-section">
+            <h4><span class="icon">🍱</span>Food Options:</h4>
+            <ul>
+                {% for item, price in low_meal.items %}
+                <li>{{ item }} - ₹{{ price }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <button onclick="prepareFinal('Train', '{{ train_cost }}')">Book Ticket</button>
+    </div>
+
+    <!-- MEDIUM BUDGET -->
+    <h2><span class="icon">💰</span>Medium Budget Travel</h2>
+    <div class="section">
+        <button onclick="toggleSection('med-transport')">Travelling</button>
+        <div id="med-transport" class="sub-section">
+            <h3><span class="icon">🚌</span>Transport: Bus</h3>
+            <p>Cost: ₹{{ bus_cost }}</p>
+        </div>
+
+        <button onclick="toggleSection('med-food')">Food</button>
+        <div id="med-food" class="sub-section">
+            <h4><span class="icon">🍱</span>Food Options:</h4>
+            <ul>
+                {% for item, price in med_meal.items %}
+                <li>{{ item }} - ₹{{ price }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <button onclick="prepareFinal('Bus', '{{ bus_cost }}')">Book Ticket</button>
+    </div>
+
+    <!-- HIGH BUDGET -->
+    <!-- HIGH BUDGET -->
+<h2><span class="icon">💎</span>High Budget Travel</h2>
+<div class="section">
+    <button onclick="toggleSection('high-transport')">Travelling</button>
+    <div id="high-transport" class="sub-section">
+        <h3><span class="icon">✈️</span>Transport: Flight</h3>
+        <p>Cost: ₹{{ flight_cost }}</p>
+    </div>
+
+    {% if flight_cost > 0 %}
+    <button onclick="toggleSection('high-food')">Food</button>
+    <div id="high-food" class="sub-section">
+        <h4><span class="icon">🍽️</span>Food Options:</h4>
+        <ul>
+            {% for item, price in high_meal.items %}
+            <li>{{ item }} - ₹{{ price }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+     <button onclick="prepareFinal('Flight', '{{ flight_cost }}')">Book Ticket</button>
+    </div>
+
+    <!-- Final Confirmation -->
+    <div class="section" id="final-confirm">
+        <h2><span class="icon">📝</span> Confirm Your Ticket</h2>
+        <form action="{% url 'book_ticket' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="source" value="{{ source }}">
+            <input type="hidden" name="destination" value="{{ destination }}">
+            <input type="hidden" name="distance" value="{{ distance }}">
+            <input type="hidden" name="mode" id="final-mode">
+            <input type="hidden" name="cost" id="final-cost">
+
+            <label for="final-name"><strong>Enter your name:</strong></label><br>
+            <input type="text" name="name" id="final-name" required><br><br>
+
+            <button type="submit">✅ Confirm Ticket</button>
+        </form>
+    </div>
+    <!-- Your content for distance, cost, food -->
+
+{% include 'shared/voice_assistant.html' %}
+</body>
+</html>

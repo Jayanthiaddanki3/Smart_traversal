@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booked Ticket</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px;
+        }
+        .ticket {
+            background-color: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 0 15px #ffc107;
+        }
+        h2 {
+            color: #ffc107;
+        }
+        p {
+            font-size: 18px;
+            margin: 8px 0;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        .actions a, .actions form {
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .actions button {
+            background-color: #ffc107;
+            border: none;
+            padding: 10px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <h2>Booking Confirmed ({{ mode }})</h2>
+        <p><strong>From:</strong> {{ source }}</p>
+        <p><strong>To:</strong> {{ destination }}</p>
+        <p><strong>Distance:</strong> {{ distance }} km</p>
+        <p><strong>Cost:</strong> ₹ {{ cost }}</p>
+       <p>
+    <strong>Path:</strong>
+    {% if full_path %}
+        {{ full_path|join:" → " }}
+    {% else %}
+        Direct route
+    {% endif %}
+</p>
+
+
+
+
+        <div class="actions">
+            <form method="get" action="{% url 'download_ticket' %}">
+                <button type="submit">Download Ticket</button>
+            </form>
+            <a href="{% url 'trip_input' %}" style="color:#ffc107">Plan Another Trip</a>
+        </div>
+    </div>
+    <!-- Your HTML content for source, destination input form -->
+
+{% include 'shared/voice_assistant.html' %}
+</body>
+</html>
+
+</body>
+</html>
